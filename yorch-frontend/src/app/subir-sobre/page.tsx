@@ -15,7 +15,8 @@ export default function SubirSobre() {
   const [nombreEditado, setNombreEditado] = useState('')
   const [mensaje, setMensaje] = useState('')
   const [clienteCreado, setClienteCreado] = useState<{ nombre: string; imagen_sobre_url: string } | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelect = async (file: File) => {
     setImagen(file)
@@ -81,8 +82,11 @@ export default function SubirSobre() {
     setNombreEditado('')
     setMensaje('')
     setClienteCreado(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = ''
+    }
+    if (galleryInputRef.current) {
+      galleryInputRef.current.value = ''
     }
   }
 
@@ -108,7 +112,7 @@ export default function SubirSobre() {
 
             <div className="flex gap-4">
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => cameraInputRef.current?.click()}
                 className="flex-1 bg-blue-600 text-white rounded-lg p-4 flex flex-col items-center gap-2 hover:bg-blue-700 transition"
               >
                 <Camera className="w-8 h-8" />
@@ -116,7 +120,7 @@ export default function SubirSobre() {
               </button>
 
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => galleryInputRef.current?.click()}
                 className="flex-1 bg-green-600 text-white rounded-lg p-4 flex flex-col items-center gap-2 hover:bg-green-700 transition"
               >
                 <Upload className="w-8 h-8" />
@@ -124,11 +128,21 @@ export default function SubirSobre() {
               </button>
             </div>
 
+            {/* Input para cámara */}
             <input
-              ref={fileInputRef}
+              ref={cameraInputRef}
               type="file"
               accept="image/*"
               capture="environment"
+              onChange={handleInputChange}
+              className="hidden"
+            />
+
+            {/* Input para galería (sin capture) */}
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
               onChange={handleInputChange}
               className="hidden"
             />
