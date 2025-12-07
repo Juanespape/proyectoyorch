@@ -156,7 +156,7 @@ export default function SubirSobre() {
               <img
                 src={imagenPreview}
                 alt="Sobre"
-                className="w-full rounded-lg"
+                className="max-w-[200px] max-h-[150px] object-cover rounded-lg mx-auto"
               />
             )}
             <div className="flex items-center justify-center gap-2 text-blue-600">
@@ -173,7 +173,7 @@ export default function SubirSobre() {
               <img
                 src={imagenPreview}
                 alt="Sobre"
-                className="w-full rounded-lg"
+                className="max-w-[200px] max-h-[150px] object-cover rounded-lg mx-auto"
               />
             )}
 
@@ -190,7 +190,7 @@ export default function SubirSobre() {
                 value={nombreEditado}
                 onChange={(e) => setNombreEditado(e.target.value)}
                 placeholder="Ingresa el nombre del cliente"
-                className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full border rounded-lg px-4 py-2 text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
               {nombreExtraido && nombreExtraido !== nombreEditado && (
                 <p className="text-xs text-gray-500 mt-1">
@@ -227,7 +227,7 @@ export default function SubirSobre() {
               <img
                 src={imagenPreview}
                 alt="Sobre"
-                className="w-full rounded-lg opacity-50"
+                className="max-w-[200px] max-h-[150px] object-cover rounded-lg mx-auto opacity-50"
               />
             )}
             <div className="flex items-center justify-center gap-2 text-blue-600">
@@ -251,7 +251,7 @@ export default function SubirSobre() {
             <img
               src={`${API_BASE_URL}${clienteCreado.imagen_sobre_url}`}
               alt={`Sobre de ${clienteCreado.nombre}`}
-              className="w-full rounded-lg"
+              className="max-w-[200px] max-h-[150px] object-cover rounded-lg mx-auto"
             />
 
             <div className="flex gap-4">
