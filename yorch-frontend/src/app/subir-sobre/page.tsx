@@ -160,7 +160,7 @@ export default function SubirSobre() {
                 <img
                   src={imagenPreview}
                   alt="Sobre"
-                  className="max-w-full max-h-full object-contain rounded-lg"
+                  className="max-w-full max-h-[50vh] object-contain rounded-lg"
                 />
               </div>
             )}
@@ -179,7 +179,7 @@ export default function SubirSobre() {
                 <img
                   src={imagenPreview}
                   alt="Sobre"
-                  className="max-w-full max-h-full object-contain rounded-lg"
+                  className="max-w-full max-h-[40vh] object-contain rounded-lg"
                 />
               </div>
             )}
@@ -237,7 +237,7 @@ export default function SubirSobre() {
                 <img
                   src={imagenPreview}
                   alt="Sobre"
-                  className="max-w-full max-h-full object-contain rounded-lg opacity-50"
+                  className="max-w-full max-h-[50vh] object-contain rounded-lg opacity-50"
                 />
               </div>
             )}
@@ -263,7 +263,7 @@ export default function SubirSobre() {
               <img
                 src={`${API_BASE_URL}${clienteCreado.imagen_sobre_url}`}
                 alt={`Sobre de ${clienteCreado.nombre}`}
-                className="max-w-full max-h-full object-contain rounded-lg"
+                className="max-w-full max-h-[40vh] object-contain rounded-lg"
               />
             </div>
 
