@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Uploads - ignore image files but keep folder
+yorch-backend/uploads/sobres/*.jpg
+yorch-backend/uploads/sobres/*.jpeg
+yorch-backend/uploads/sobres/*.png
+yorch-backend/uploads/sobres/*.gif
+yorch-backend/uploads/sobres/*.webp
