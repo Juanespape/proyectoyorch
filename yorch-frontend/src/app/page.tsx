@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Camera, MessageCircle, FolderOpen, ClipboardList, FileText } from 'lucide-react'
+import { Camera, MessageCircle, FolderOpen, ClipboardList, FileText, Users } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -82,6 +82,22 @@ export default function Home() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Escrituras</h3>
                 <p className="text-gray-500 text-sm">Guarda documentos y fotos de escrituras</p>
+              </div>
+            </div>
+          </Link>
+
+          {/* Botón Clientes */}
+          <Link
+            href="/clientes"
+            className="block bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition border-l-4 border-cyan-500"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-cyan-100 rounded-full flex items-center justify-center">
+                <Users className="w-7 h-7 text-cyan-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">Clientes</h3>
+                <p className="text-gray-500 text-sm">Ver, editar o eliminar clientes</p>
               </div>
             </div>
           </Link>

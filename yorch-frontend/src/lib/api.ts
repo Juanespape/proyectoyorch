@@ -92,6 +92,34 @@ export async function obtenerClientes(): Promise<Cliente[]> {
   return response.json()
 }
 
+export async function actualizarCliente(clienteId: number, datos: { nombre?: string }): Promise<Cliente> {
+  const response = await fetch(`${API_URL}/clientes/${clienteId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(datos),
+  })
+
+  if (!response.ok) {
+    throw new Error('Error al actualizar cliente')
+  }
+
+  return response.json()
+}
+
+export async function eliminarCliente(clienteId: number): Promise<{ message: string }> {
+  const response = await fetch(`${API_URL}/clientes/${clienteId}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    throw new Error('Error al eliminar cliente')
+  }
+
+  return response.json()
+}
+
 export async function subirImagenSobre(clienteId: number, file: File): Promise<{ imagen_url: string }> {
   const formData = new FormData()
   formData.append('file', file)
