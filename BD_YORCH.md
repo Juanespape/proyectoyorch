@@ -33,6 +33,7 @@ docker exec jjross-postgres psql -U postgres -d yorch_db -c "\dt"
 --------+-----------------------+-------+----------
  public | alembic_version       | table | postgres
  public | clientes              | table | postgres
+ public | escrituras            | table | postgres
  public | mensajes              | table | postgres
  public | movimientos_pendientes| table | postgres
 ```
@@ -58,6 +59,9 @@ docker exec jjross-postgres psql -U postgres -d yorch_db -c "SELECT COUNT(*) as 
 
 # Mensajes del chat
 docker exec jjross-postgres psql -U postgres -d yorch_db -c "SELECT COUNT(*) as total FROM mensajes;"
+
+# Escrituras
+docker exec jjross-postgres psql -U postgres -d yorch_db -c "SELECT COUNT(*) as total FROM escrituras;"
 ```
 
 ---
@@ -70,6 +74,9 @@ docker exec jjross-postgres psql -U postgres -d yorch_db -c "\d clientes"
 
 # Estructura de movimientos_pendientes
 docker exec jjross-postgres psql -U postgres -d yorch_db -c "\d movimientos_pendientes"
+
+# Estructura de escrituras
+docker exec jjross-postgres psql -U postgres -d yorch_db -c "\d escrituras"
 ```
 
 ---
@@ -85,6 +92,9 @@ docker exec jjross-postgres psql -U postgres -d yorch_db -c "SELECT m.id, c.nomb
 
 # Ver ultimos mensajes del chat
 docker exec jjross-postgres psql -U postgres -d yorch_db -c "SELECT id, rol, LEFT(contenido, 50) as contenido FROM mensajes ORDER BY id DESC LIMIT 10;"
+
+# Ver escrituras
+docker exec jjross-postgres psql -U postgres -d yorch_db -c "SELECT id, nombre_propietario, carpeta, cantidad_archivos FROM escrituras ORDER BY id DESC;"
 ```
 
 ---
@@ -226,6 +236,17 @@ alembic upgrade head
 | contenido | TEXT | Contenido del mensaje |
 | created_at | TIMESTAMP | Fecha de creacion |
 
+### escrituras
+| Columna | Tipo | Descripcion |
+|---------|------|-------------|
+| id | INT | ID unico |
+| nombre_propietario | VARCHAR | Nombre del propietario |
+| carpeta | VARCHAR | Nombre de la carpeta en uploads/escrituras/ |
+| notas | TEXT | Notas adicionales |
+| cantidad_archivos | INT | Cantidad de archivos guardados |
+| created_at | TIMESTAMP | Fecha de creacion |
+| updated_at | TIMESTAMP | Fecha de actualizacion |
+
 ---
 
 ## ESTRUCTURA DE CONEXION
@@ -249,9 +270,10 @@ Base de datos: yorch_db
 - **Backend:** `C:\Users\juanp\Documents\Proyectos\proyecto yorch\yorch-backend\`
 - **Frontend:** `C:\Users\juanp\Documents\Proyectos\proyecto yorch\yorch-frontend\`
 - **Migraciones:** `C:\Users\juanp\Documents\Proyectos\proyecto yorch\yorch-backend\alembic\versions\`
-- **Uploads:** `C:\Users\juanp\Documents\Proyectos\proyecto yorch\yorch-backend\uploads\sobres\`
+- **Uploads Sobres:** `C:\Users\juanp\Documents\Proyectos\proyecto yorch\yorch-backend\uploads\sobres\`
+- **Uploads Escrituras:** `C:\Users\juanp\Documents\Proyectos\proyecto yorch\yorch-backend\uploads\escrituras\`
 - **Docker (compartido):** `C:\Users\juanp\Documents\Proyectos\jjross\docker-compose.yml`
 
 ---
 
-**Ultima actualizacion:** 2025-12-07
+**Ultima actualizacion:** 2025-12-08

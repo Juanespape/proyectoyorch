@@ -154,17 +154,19 @@ export default function SubirSobre() {
 
         {/* Estado Procesando */}
         {estado === 'procesando' && (
-          <div className="flex-1 flex flex-col bg-white rounded-lg shadow p-4">
+          <div className="flex-1 flex flex-col bg-white rounded-lg shadow overflow-hidden">
+            {/* Área de imagen - ocupa todo el espacio disponible */}
             {imagenPreview && (
-              <div className="flex-1 min-h-0 flex items-center justify-center mb-4">
+              <div className="flex-1 min-h-0 flex items-center justify-center p-4 overflow-hidden">
                 <img
                   src={imagenPreview}
                   alt="Sobre"
-                  className="max-w-full max-h-[50vh] object-contain rounded-lg"
+                  className="max-w-full max-h-full object-contain rounded-lg"
                 />
               </div>
             )}
-            <div className="flex-shrink-0 flex items-center justify-center gap-2 text-blue-600 py-2">
+            {/* Footer fijo */}
+            <div className="flex-shrink-0 bg-white border-t p-4 flex items-center justify-center gap-2 text-blue-600" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
               <Loader2 className="w-6 h-6 animate-spin" />
               <span>{mensaje}</span>
             </div>
@@ -173,18 +175,20 @@ export default function SubirSobre() {
 
         {/* Estado Confirmar */}
         {estado === 'confirmar' && (
-          <div className="flex-1 flex flex-col bg-white rounded-lg shadow p-4">
+          <div className="flex-1 flex flex-col bg-white rounded-lg shadow overflow-hidden">
+            {/* Área de imagen - ocupa todo el espacio disponible */}
             {imagenPreview && (
-              <div className="flex-1 min-h-0 flex items-center justify-center mb-3">
+              <div className="flex-1 min-h-0 flex items-center justify-center p-4 overflow-hidden">
                 <img
                   src={imagenPreview}
                   alt="Sobre"
-                  className="max-w-full max-h-[40vh] object-contain rounded-lg"
+                  className="max-w-full max-h-full object-contain rounded-lg"
                 />
               </div>
             )}
 
-            <div className="flex-shrink-0 space-y-3">
+            {/* Footer fijo - siempre visible */}
+            <div className="flex-shrink-0 bg-white border-t p-4 space-y-3" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
               {mensaje && (
                 <p className="text-amber-600 text-sm">{mensaje}</p>
               )}
@@ -231,17 +235,19 @@ export default function SubirSobre() {
 
         {/* Estado Guardando */}
         {estado === 'guardando' && (
-          <div className="flex-1 flex flex-col bg-white rounded-lg shadow p-4">
+          <div className="flex-1 flex flex-col bg-white rounded-lg shadow overflow-hidden">
+            {/* Área de imagen - ocupa todo el espacio disponible */}
             {imagenPreview && (
-              <div className="flex-1 min-h-0 flex items-center justify-center mb-4">
+              <div className="flex-1 min-h-0 flex items-center justify-center p-4 overflow-hidden">
                 <img
                   src={imagenPreview}
                   alt="Sobre"
-                  className="max-w-full max-h-[50vh] object-contain rounded-lg opacity-50"
+                  className="max-w-full max-h-full object-contain rounded-lg opacity-50"
                 />
               </div>
             )}
-            <div className="flex-shrink-0 flex items-center justify-center gap-2 text-blue-600 py-2">
+            {/* Footer fijo */}
+            <div className="flex-shrink-0 bg-white border-t p-4 flex items-center justify-center gap-2 text-blue-600" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
               <Loader2 className="w-6 h-6 animate-spin" />
               <span>{mensaje}</span>
             </div>
@@ -250,8 +256,9 @@ export default function SubirSobre() {
 
         {/* Estado Éxito */}
         {estado === 'exito' && clienteCreado && (
-          <div className="flex-1 flex flex-col bg-white rounded-lg shadow p-4">
-            <div className="flex-shrink-0 text-center mb-3">
+          <div className="flex-1 flex flex-col bg-white rounded-lg shadow overflow-hidden">
+            {/* Header con éxito */}
+            <div className="flex-shrink-0 text-center p-4 border-b">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
                 <Check className="w-6 h-6 text-green-600" />
               </div>
@@ -259,15 +266,17 @@ export default function SubirSobre() {
               <p className="text-gray-600">{clienteCreado.nombre}</p>
             </div>
 
-            <div className="flex-1 min-h-0 flex items-center justify-center mb-3">
+            {/* Área de imagen - ocupa todo el espacio disponible */}
+            <div className="flex-1 min-h-0 flex items-center justify-center p-4 overflow-hidden">
               <img
                 src={`${API_BASE_URL}${clienteCreado.imagen_sobre_url}`}
                 alt={`Sobre de ${clienteCreado.nombre}`}
-                className="max-w-full max-h-[40vh] object-contain rounded-lg"
+                className="max-w-full max-h-full object-contain rounded-lg"
               />
             </div>
 
-            <div className="flex-shrink-0 flex gap-3">
+            {/* Footer fijo - siempre visible */}
+            <div className="flex-shrink-0 bg-white border-t p-4 flex gap-3" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
               <button
                 onClick={handleReiniciar}
                 className="flex-1 bg-blue-600 text-white rounded-lg p-3 hover:bg-blue-700 transition"

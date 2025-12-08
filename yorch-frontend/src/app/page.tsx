@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Camera, MessageCircle, FolderOpen, ClipboardList } from 'lucide-react'
+import { Camera, MessageCircle, FolderOpen, ClipboardList, FileText } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -66,6 +66,22 @@ export default function Home() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Pendientes</h3>
                 <p className="text-gray-500 text-sm">Actualiza sobres con movimientos pendientes</p>
+              </div>
+            </div>
+          </Link>
+
+          {/* Botón Escrituras */}
+          <Link
+            href="/escrituras"
+            className="block bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition border-l-4 border-purple-500"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center">
+                <FileText className="w-7 h-7 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">Escrituras</h3>
+                <p className="text-gray-500 text-sm">Guarda documentos y fotos de escrituras</p>
               </div>
             </div>
           </Link>

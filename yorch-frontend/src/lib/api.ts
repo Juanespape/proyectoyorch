@@ -214,3 +214,93 @@ export async function enviarMensajeVoz(audioBlob: Blob): Promise<VozResponse> {
 
   return response.json()
 }
+
+// ==================== ESCRITURAS ====================
+
+export interface Escritura {
+  id: number
+  nombre_propietario: string
+  carpeta: string
+  notas?: string
+  cantidad_archivos: number
+  created_at: string
+}
+
+export interface EscrituraDetalle extends Escritura {
+  archivos: {
+    nombre: string
+    url: string
+    tipo: 'pdf' | 'imagen'
+  }[]
+}
+
+export interface CrearEscrituraResponse {
+  success: boolean
+  escritura: {
+    id: number
+    nombre_propietario: string
+    carpeta: string
+    cantidad_archivos: number
+    archivos: string[]
+  }
+  mensaje: string
+}
+
+export async function crearEscritura(
+  nombrePropietario: string,
+  archivos: File[],
+  notas?: string
+): Promise<CrearEscrituraResponse> {
+  const formData = new FormData()
+  formData.append('nombre_propietario', nombrePropietario)
+  if (notas) {
+    formData.append('notas', notas)
+  }
+  archivos.forEach((archivo) => {
+    formData.append('archivos', archivo)
+  })
+
+  const response = await fetch(`${API_URL}/escrituras`, {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.detail || 'Error al guardar escritura')
+  }
+
+  return response.json()
+}
+
+export async function listarEscrituras(): Promise<Escritura[]> {
+  const response = await fetch(`${API_URL}/escrituras`)
+
+  if (!response.ok) {
+    throw new Error('Error al obtener escrituras')
+  }
+
+  return response.json()
+}
+
+export async function obtenerEscritura(id: number): Promise<EscrituraDetalle> {
+  const response = await fetch(`${API_URL}/escrituras/${id}`)
+
+  if (!response.ok) {
+    throw new Error('Error al obtener escritura')
+  }
+
+  return response.json()
+}
+
+export async function eliminarEscritura(id: number): Promise<{ success: boolean; mensaje: string }> {
+  const response = await fetch(`${API_URL}/escrituras/${id}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    throw new Error('Error al eliminar escritura')
+  }
+
+  return response.json()
+}

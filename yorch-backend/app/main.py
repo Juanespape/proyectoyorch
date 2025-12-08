@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from app.core.config import settings
-from app.routers import chat_router, clientes_router, movimientos_router, sobres_router
+from app.routers import chat_router, clientes_router, movimientos_router, sobres_router, escrituras_router
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -25,6 +25,7 @@ app.include_router(chat_router, prefix=settings.API_V1_PREFIX)
 app.include_router(clientes_router, prefix=settings.API_V1_PREFIX)
 app.include_router(movimientos_router, prefix=settings.API_V1_PREFIX)
 app.include_router(sobres_router, prefix=settings.API_V1_PREFIX)
+app.include_router(escrituras_router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/")
