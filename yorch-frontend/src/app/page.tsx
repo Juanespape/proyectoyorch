@@ -1,14 +1,26 @@
 'use client'
 
 import Link from 'next/link'
-import { Camera, MessageCircle, FolderOpen, ClipboardList, FileText, Users } from 'lucide-react'
+import { Camera, MessageCircle, FolderOpen, ClipboardList, FileText, Users, LogOut } from 'lucide-react'
+import { useAuth } from '@/lib/auth'
 
 export default function Home() {
+  const { logout } = useAuth()
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-blue-600 text-white p-4 shadow-md">
-        <h1 className="text-xl font-bold text-center">Yorch - Asistente de Préstamos</h1>
+        <div className="flex items-center justify-between max-w-lg mx-auto">
+          <h1 className="text-xl font-bold">Yorch - Asistente de Prestamos</h1>
+          <button
+            onClick={logout}
+            className="flex items-center gap-2 px-3 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg transition text-sm"
+          >
+            <LogOut className="w-4 h-4" />
+            Salir
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}

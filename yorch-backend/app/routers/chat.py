@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.config import settings
+from app.core.security import get_current_user
 from app.schemas import ChatMessage, ChatResponse
 from app.services.ai_service import chat_con_agente
 import google.generativeai as genai
@@ -10,7 +11,11 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 @router.post("/", response_model=ChatResponse)
-async def enviar_mensaje(mensaje: ChatMessage, db: Session = Depends(get_db)):
+async def enviar_mensaje(
+    mensaje: ChatMessage,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Envía un mensaje al agente IA y obtiene una respuesta."""
     respuesta, imagen_url, cliente_id, accion = await chat_con_agente(db, mensaje.mensaje)
 
@@ -25,7 +30,8 @@ async def enviar_mensaje(mensaje: ChatMessage, db: Session = Depends(get_db)):
 @router.post("/voz")
 async def procesar_mensaje_voz(
     audio: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """Recibe audio, lo transcribe con Gemini y procesa el mensaje."""
     try:

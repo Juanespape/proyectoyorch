@@ -1,6 +1,40 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'
 
+// ==================== AUTH HELPERS ====================
+
+function getToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('yorch_token')
+}
+
+function authHeaders(contentType?: string): HeadersInit {
+  const headers: HeadersInit = {}
+  const token = getToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  if (contentType) {
+    headers['Content-Type'] = contentType
+  }
+  return headers
+}
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (response.status === 401) {
+    localStorage.removeItem('yorch_token')
+    window.location.href = '/login'
+    throw new Error('Sesion expirada')
+  }
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Error desconocido' }))
+    throw new Error(error.detail || 'Error en la peticion')
+  }
+  return response.json()
+}
+
+// ==================== INTERFACES ====================
+
 export interface ChatResponse {
   respuesta: string
   imagen_url?: string
@@ -46,129 +80,6 @@ export interface CrearClienteResponse {
   mensaje: string
 }
 
-export async function enviarMensaje(mensaje: string): Promise<ChatResponse> {
-  const response = await fetch(`${API_URL}/chat/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ mensaje }),
-  })
-
-  if (!response.ok) {
-    throw new Error('Error al enviar mensaje')
-  }
-
-  return response.json()
-}
-
-export async function obtenerPendientes(): Promise<MovimientoPendiente[]> {
-  const response = await fetch(`${API_URL}/movimientos/pendientes`)
-
-  if (!response.ok) {
-    throw new Error('Error al obtener pendientes')
-  }
-
-  return response.json()
-}
-
-export async function marcarProcesado(movimientoId: number): Promise<void> {
-  const response = await fetch(`${API_URL}/movimientos/${movimientoId}/procesar`, {
-    method: 'PUT',
-  })
-
-  if (!response.ok) {
-    throw new Error('Error al marcar como procesado')
-  }
-}
-
-export async function obtenerClientes(): Promise<Cliente[]> {
-  const response = await fetch(`${API_URL}/clientes/`)
-
-  if (!response.ok) {
-    throw new Error('Error al obtener clientes')
-  }
-
-  return response.json()
-}
-
-export async function actualizarCliente(clienteId: number, datos: { nombre?: string }): Promise<Cliente> {
-  const response = await fetch(`${API_URL}/clientes/${clienteId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(datos),
-  })
-
-  if (!response.ok) {
-    throw new Error('Error al actualizar cliente')
-  }
-
-  return response.json()
-}
-
-export async function eliminarCliente(clienteId: number): Promise<{ message: string }> {
-  const response = await fetch(`${API_URL}/clientes/${clienteId}`, {
-    method: 'DELETE',
-  })
-
-  if (!response.ok) {
-    throw new Error('Error al eliminar cliente')
-  }
-
-  return response.json()
-}
-
-export async function subirImagenSobre(clienteId: number, file: File): Promise<{ imagen_url: string }> {
-  const formData = new FormData()
-  formData.append('file', file)
-
-  const response = await fetch(`${API_URL}/clientes/${clienteId}/subir-sobre`, {
-    method: 'POST',
-    body: formData,
-  })
-
-  if (!response.ok) {
-    throw new Error('Error al subir imagen')
-  }
-
-  return response.json()
-}
-
-export async function extraerNombreDeSobre(file: File): Promise<ExtraerNombreResponse> {
-  const formData = new FormData()
-  formData.append('file', file)
-
-  const response = await fetch(`${API_URL}/sobres/extraer-nombre`, {
-    method: 'POST',
-    body: formData,
-  })
-
-  if (!response.ok) {
-    throw new Error('Error al procesar imagen')
-  }
-
-  return response.json()
-}
-
-export async function crearClienteConSobre(nombre: string, file: File): Promise<CrearClienteResponse> {
-  const formData = new FormData()
-  formData.append('file', file)
-
-  const response = await fetch(`${API_URL}/sobres/crear-cliente?nombre=${encodeURIComponent(nombre)}`, {
-    method: 'POST',
-    body: formData,
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.detail || 'Error al crear cliente')
-  }
-
-  return response.json()
-}
-
 export interface ClienteConPendientes {
   cliente_id: number
   nombre: string
@@ -176,16 +87,6 @@ export interface ClienteConPendientes {
   cantidad_pendientes: number
   total_prestamos: number
   total_abonos: number
-}
-
-export async function obtenerClientesConPendientes(): Promise<ClienteConPendientes[]> {
-  const response = await fetch(`${API_URL}/sobres/pendientes`)
-
-  if (!response.ok) {
-    throw new Error('Error al obtener pendientes')
-  }
-
-  return response.json()
 }
 
 export interface ActualizarSobreResponse {
@@ -199,24 +100,6 @@ export interface ActualizarSobreResponse {
   mensaje: string
 }
 
-export async function actualizarSobreCliente(clienteId: number, file: File): Promise<ActualizarSobreResponse> {
-  const formData = new FormData()
-  formData.append('file', file)
-
-  const response = await fetch(`${API_URL}/sobres/actualizar-sobre/${clienteId}`, {
-    method: 'POST',
-    body: formData,
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.detail || 'Error al actualizar sobre')
-  }
-
-  return response.json()
-}
-
-// Interfaz para respuesta de voz
 export interface VozResponse {
   success: boolean
   transcripcion: string | null
@@ -226,24 +109,6 @@ export interface VozResponse {
   accion?: string
   error?: string
 }
-
-export async function enviarMensajeVoz(audioBlob: Blob): Promise<VozResponse> {
-  const formData = new FormData()
-  formData.append('audio', audioBlob, 'audio.webm')
-
-  const response = await fetch(`${API_URL}/chat/voz`, {
-    method: 'POST',
-    body: formData,
-  })
-
-  if (!response.ok) {
-    throw new Error('Error al enviar audio')
-  }
-
-  return response.json()
-}
-
-// ==================== ESCRITURAS ====================
 
 export interface Escritura {
   id: number
@@ -274,6 +139,138 @@ export interface CrearEscrituraResponse {
   mensaje: string
 }
 
+// ==================== CHAT ====================
+
+export async function enviarMensaje(mensaje: string): Promise<ChatResponse> {
+  const response = await fetch(`${API_URL}/chat/`, {
+    method: 'POST',
+    headers: authHeaders('application/json'),
+    body: JSON.stringify({ mensaje }),
+  })
+  return handleResponse<ChatResponse>(response)
+}
+
+export async function enviarMensajeVoz(audioBlob: Blob): Promise<VozResponse> {
+  const formData = new FormData()
+  formData.append('audio', audioBlob, 'audio.webm')
+
+  const response = await fetch(`${API_URL}/chat/voz`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: formData,
+  })
+  return handleResponse<VozResponse>(response)
+}
+
+// ==================== MOVIMIENTOS ====================
+
+export async function obtenerPendientes(): Promise<MovimientoPendiente[]> {
+  const response = await fetch(`${API_URL}/movimientos/pendientes`, {
+    headers: authHeaders(),
+  })
+  return handleResponse<MovimientoPendiente[]>(response)
+}
+
+export async function marcarProcesado(movimientoId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/movimientos/${movimientoId}/procesar`, {
+    method: 'PUT',
+    headers: authHeaders(),
+  })
+  if (response.status === 401) {
+    localStorage.removeItem('yorch_token')
+    window.location.href = '/login'
+    throw new Error('Sesion expirada')
+  }
+  if (!response.ok) {
+    throw new Error('Error al marcar como procesado')
+  }
+}
+
+// ==================== CLIENTES ====================
+
+export async function obtenerClientes(): Promise<Cliente[]> {
+  const response = await fetch(`${API_URL}/clientes/`, {
+    headers: authHeaders(),
+  })
+  return handleResponse<Cliente[]>(response)
+}
+
+export async function actualizarCliente(clienteId: number, datos: { nombre?: string }): Promise<Cliente> {
+  const response = await fetch(`${API_URL}/clientes/${clienteId}`, {
+    method: 'PUT',
+    headers: authHeaders('application/json'),
+    body: JSON.stringify(datos),
+  })
+  return handleResponse<Cliente>(response)
+}
+
+export async function eliminarCliente(clienteId: number): Promise<{ message: string }> {
+  const response = await fetch(`${API_URL}/clientes/${clienteId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+  return handleResponse<{ message: string }>(response)
+}
+
+export async function subirImagenSobre(clienteId: number, file: File): Promise<{ imagen_url: string }> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(`${API_URL}/clientes/${clienteId}/subir-sobre`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: formData,
+  })
+  return handleResponse<{ imagen_url: string }>(response)
+}
+
+// ==================== SOBRES ====================
+
+export async function extraerNombreDeSobre(file: File): Promise<ExtraerNombreResponse> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(`${API_URL}/sobres/extraer-nombre`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: formData,
+  })
+  return handleResponse<ExtraerNombreResponse>(response)
+}
+
+export async function crearClienteConSobre(nombre: string, file: File): Promise<CrearClienteResponse> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(`${API_URL}/sobres/crear-cliente?nombre=${encodeURIComponent(nombre)}`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: formData,
+  })
+  return handleResponse<CrearClienteResponse>(response)
+}
+
+export async function obtenerClientesConPendientes(): Promise<ClienteConPendientes[]> {
+  const response = await fetch(`${API_URL}/sobres/pendientes`, {
+    headers: authHeaders(),
+  })
+  return handleResponse<ClienteConPendientes[]>(response)
+}
+
+export async function actualizarSobreCliente(clienteId: number, file: File): Promise<ActualizarSobreResponse> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(`${API_URL}/sobres/actualizar-sobre/${clienteId}`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: formData,
+  })
+  return handleResponse<ActualizarSobreResponse>(response)
+}
+
+// ==================== ESCRITURAS ====================
+
 export async function crearEscritura(
   nombrePropietario: string,
   archivos: File[],
@@ -290,45 +287,30 @@ export async function crearEscritura(
 
   const response = await fetch(`${API_URL}/escrituras`, {
     method: 'POST',
+    headers: authHeaders(),
     body: formData,
   })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.detail || 'Error al guardar escritura')
-  }
-
-  return response.json()
+  return handleResponse<CrearEscrituraResponse>(response)
 }
 
 export async function listarEscrituras(): Promise<Escritura[]> {
-  const response = await fetch(`${API_URL}/escrituras`)
-
-  if (!response.ok) {
-    throw new Error('Error al obtener escrituras')
-  }
-
-  return response.json()
+  const response = await fetch(`${API_URL}/escrituras`, {
+    headers: authHeaders(),
+  })
+  return handleResponse<Escritura[]>(response)
 }
 
 export async function obtenerEscritura(id: number): Promise<EscrituraDetalle> {
-  const response = await fetch(`${API_URL}/escrituras/${id}`)
-
-  if (!response.ok) {
-    throw new Error('Error al obtener escritura')
-  }
-
-  return response.json()
+  const response = await fetch(`${API_URL}/escrituras/${id}`, {
+    headers: authHeaders(),
+  })
+  return handleResponse<EscrituraDetalle>(response)
 }
 
 export async function eliminarEscritura(id: number): Promise<{ success: boolean; mensaje: string }> {
   const response = await fetch(`${API_URL}/escrituras/${id}`, {
     method: 'DELETE',
+    headers: authHeaders(),
   })
-
-  if (!response.ok) {
-    throw new Error('Error al eliminar escritura')
-  }
-
-  return response.json()
+  return handleResponse<{ success: boolean; mensaje: string }>(response)
 }

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.core.database import get_db
+from app.core.security import get_current_user
 from app.models import Escritura
 from pathlib import Path
 import re
@@ -26,7 +27,8 @@ async def crear_escritura(
     nombre_propietario: str = Form(...),
     notas: Optional[str] = Form(None),
     archivos: List[UploadFile] = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """Crea una escritura con sus archivos (PDF o imágenes)."""
 
@@ -102,7 +104,10 @@ async def crear_escritura(
 
 
 @router.get("")
-def listar_escrituras(db: Session = Depends(get_db)):
+def listar_escrituras(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Lista todas las escrituras."""
     escrituras = db.query(Escritura).order_by(Escritura.created_at.desc()).all()
 
@@ -120,7 +125,11 @@ def listar_escrituras(db: Session = Depends(get_db)):
 
 
 @router.get("/{escritura_id}")
-def obtener_escritura(escritura_id: int, db: Session = Depends(get_db)):
+def obtener_escritura(
+    escritura_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Obtiene una escritura con sus archivos."""
     escritura = db.query(Escritura).filter(Escritura.id == escritura_id).first()
 
@@ -152,7 +161,11 @@ def obtener_escritura(escritura_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/{escritura_id}")
-def eliminar_escritura(escritura_id: int, db: Session = Depends(get_db)):
+def eliminar_escritura(
+    escritura_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Elimina una escritura y sus archivos."""
     escritura = db.query(Escritura).filter(Escritura.id == escritura_id).first()
 

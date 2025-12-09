@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
+from app.core.security import get_current_user
 from app.models import Cliente
 from app.schemas import ClienteCreate, ClienteUpdate, ClienteResponse
 import os
@@ -16,14 +17,23 @@ UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 @router.get("/", response_model=List[ClienteResponse])
-def listar_clientes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def listar_clientes(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Lista todos los clientes."""
     clientes = db.query(Cliente).offset(skip).limit(limit).all()
     return clientes
 
 
 @router.get("/{cliente_id}", response_model=ClienteResponse)
-def obtener_cliente(cliente_id: int, db: Session = Depends(get_db)):
+def obtener_cliente(
+    cliente_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Obtiene un cliente por ID."""
     cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
     if not cliente:
@@ -32,7 +42,11 @@ def obtener_cliente(cliente_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=ClienteResponse)
-def crear_cliente(cliente: ClienteCreate, db: Session = Depends(get_db)):
+def crear_cliente(
+    cliente: ClienteCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Crea un nuevo cliente."""
     db_cliente = Cliente(**cliente.model_dump())
     db.add(db_cliente)
@@ -42,7 +56,12 @@ def crear_cliente(cliente: ClienteCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{cliente_id}", response_model=ClienteResponse)
-def actualizar_cliente(cliente_id: int, cliente: ClienteUpdate, db: Session = Depends(get_db)):
+def actualizar_cliente(
+    cliente_id: int,
+    cliente: ClienteUpdate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Actualiza un cliente existente."""
     db_cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
     if not db_cliente:
@@ -57,7 +76,11 @@ def actualizar_cliente(cliente_id: int, cliente: ClienteUpdate, db: Session = De
 
 
 @router.delete("/{cliente_id}")
-def eliminar_cliente(cliente_id: int, db: Session = Depends(get_db)):
+def eliminar_cliente(
+    cliente_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Elimina un cliente."""
     db_cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
     if not db_cliente:
@@ -72,7 +95,8 @@ def eliminar_cliente(cliente_id: int, db: Session = Depends(get_db)):
 async def subir_imagen_sobre(
     cliente_id: int,
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """Sube una imagen del sobre de un cliente (almacenamiento local)."""
     cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()

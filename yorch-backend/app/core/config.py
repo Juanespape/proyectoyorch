@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: str = '["http://localhost:3000"]'
 
+    # Auth - Usuario unico
+    ADMIN_USERNAME: str = "admin"
+    ADMIN_PASSWORD_HASH: str = ""  # Se genera con: from passlib.context import CryptContext; CryptContext(schemes=["bcrypt"]).hash("tu_password")
+
     # Gemini AI
     GEMINI_API_KEY: str = ""
 

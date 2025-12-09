@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.config import settings
+from app.core.security import get_current_user
 from app.models import Cliente, MovimientoPendiente
 from datetime import datetime
 from pathlib import Path
@@ -30,7 +31,10 @@ def limpiar_nombre_archivo(nombre: str) -> str:
 
 
 @router.post("/extraer-nombre")
-async def extraer_nombre_de_sobre(file: UploadFile = File(...)):
+async def extraer_nombre_de_sobre(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
     """Usa Gemini Vision para extraer el nombre del cliente de la imagen del sobre."""
     try:
         # Leer contenido de la imagen
@@ -80,7 +84,8 @@ async def extraer_nombre_de_sobre(file: UploadFile = File(...)):
 async def crear_cliente_con_sobre(
     nombre: str,
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """Crea un cliente y guarda la imagen del sobre."""
 
@@ -139,7 +144,8 @@ async def crear_cliente_con_sobre(
 async def actualizar_sobre_cliente(
     cliente_id: int,
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """Actualiza la imagen del sobre de un cliente y marca sus movimientos como procesados."""
 
@@ -190,7 +196,10 @@ async def actualizar_sobre_cliente(
 
 
 @router.get("/pendientes")
-def obtener_clientes_con_pendientes(db: Session = Depends(get_db)):
+def obtener_clientes_con_pendientes(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Obtiene la lista de clientes que tienen movimientos pendientes."""
     from sqlalchemy import func, case
 

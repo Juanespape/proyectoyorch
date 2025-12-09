@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime
 from app.core.database import get_db
+from app.core.security import get_current_user
 from app.models import MovimientoPendiente, Cliente
 from app.schemas import MovimientoCreate, MovimientoResponse, MovimientoConCliente
 
@@ -10,7 +11,10 @@ router = APIRouter(prefix="/movimientos", tags=["movimientos"])
 
 
 @router.get("/pendientes", response_model=List[MovimientoConCliente])
-def listar_pendientes(db: Session = Depends(get_db)):
+def listar_pendientes(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Lista todos los movimientos pendientes."""
     movimientos = db.query(MovimientoPendiente).filter(
         MovimientoPendiente.procesado == False
@@ -37,7 +41,8 @@ def listar_movimientos(
     skip: int = 0,
     limit: int = 100,
     solo_pendientes: bool = False,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
 ):
     """Lista todos los movimientos."""
     query = db.query(MovimientoPendiente)
@@ -48,7 +53,11 @@ def listar_movimientos(
 
 
 @router.post("/", response_model=MovimientoResponse)
-def crear_movimiento(movimiento: MovimientoCreate, db: Session = Depends(get_db)):
+def crear_movimiento(
+    movimiento: MovimientoCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Crea un nuevo movimiento."""
     # Verificar que el cliente existe
     cliente = db.query(Cliente).filter(Cliente.id == movimiento.cliente_id).first()
@@ -63,7 +72,11 @@ def crear_movimiento(movimiento: MovimientoCreate, db: Session = Depends(get_db)
 
 
 @router.put("/{movimiento_id}/procesar")
-def marcar_procesado(movimiento_id: int, db: Session = Depends(get_db)):
+def marcar_procesado(
+    movimiento_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Marca un movimiento como procesado."""
     movimiento = db.query(MovimientoPendiente).filter(
         MovimientoPendiente.id == movimiento_id
@@ -80,7 +93,11 @@ def marcar_procesado(movimiento_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/procesar-cliente/{cliente_id}")
-def marcar_procesados_cliente(cliente_id: int, db: Session = Depends(get_db)):
+def marcar_procesados_cliente(
+    cliente_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     """Marca todos los movimientos de un cliente como procesados."""
     count = db.query(MovimientoPendiente).filter(
         MovimientoPendiente.cliente_id == cliente_id,
