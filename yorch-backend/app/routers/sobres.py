@@ -30,6 +30,16 @@ def limpiar_nombre_archivo(nombre: str) -> str:
     return nombre.lower()
 
 
+def to_title_case(nombre: str) -> str:
+    """Convierte el nombre a Title Case (primera letra de cada palabra en mayúscula)."""
+    return ' '.join(word.capitalize() for word in nombre.lower().split())
+
+
+def normalizar_nombre(nombre: str) -> str:
+    """Normaliza el nombre para comparación (minúsculas, sin espacios extra)."""
+    return ' '.join(nombre.lower().split())
+
+
 @router.post("/extraer-nombre")
 async def extraer_nombre_de_sobre(
     file: UploadFile = File(...),
@@ -89,20 +99,22 @@ async def crear_cliente_con_sobre(
 ):
     """Crea un cliente y guarda la imagen del sobre."""
 
-    # Verificar si ya existe un cliente con ese nombre
-    cliente_existente = db.query(Cliente).filter(
-        Cliente.nombre.ilike(f"%{nombre}%")
-    ).first()
+    # Normalizar y formatear el nombre
+    nombre_formateado = to_title_case(nombre.strip())
+    nombre_normalizado = normalizar_nombre(nombre)
 
-    if cliente_existente:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Ya existe un cliente similar: {cliente_existente.nombre}"
-        )
+    # Verificar si ya existe un cliente con el mismo nombre (comparación exacta normalizada)
+    clientes = db.query(Cliente).all()
+    for cliente in clientes:
+        if normalizar_nombre(cliente.nombre) == nombre_normalizado:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Ya existe un cliente con ese nombre: {cliente.nombre}"
+            )
 
     try:
-        # Crear el cliente
-        nuevo_cliente = Cliente(nombre=nombre)
+        # Crear el cliente con nombre formateado
+        nuevo_cliente = Cliente(nombre=nombre_formateado)
         db.add(nuevo_cliente)
         db.commit()
         db.refresh(nuevo_cliente)
@@ -132,7 +144,7 @@ async def crear_cliente_con_sobre(
                 "nombre": nuevo_cliente.nombre,
                 "imagen_sobre_url": imagen_url
             },
-            "mensaje": f"Cliente '{nombre}' creado exitosamente"
+            "mensaje": f"Cliente '{nombre_formateado}' creado exitosamente"
         }
 
     except Exception as e:
