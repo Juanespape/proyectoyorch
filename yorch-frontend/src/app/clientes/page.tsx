@@ -30,9 +30,18 @@ export default function Clientes() {
     cargarClientes()
   }, [])
 
-  const clientesFiltrados = clientes.filter(c =>
-    c.nombre.toLowerCase().includes(busqueda.toLowerCase())
-  )
+  // Función para convertir a Title Case (Primera letra mayúscula de cada palabra)
+  const toTitleCase = (str: string) => {
+    return str
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  }
+
+  const clientesFiltrados = clientes
+    .filter(c => c.nombre.toLowerCase().includes(busqueda.toLowerCase()))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }))
 
   const iniciarEdicion = (cliente: Cliente) => {
     setEditandoId(cliente.id)
@@ -47,11 +56,12 @@ export default function Clientes() {
   const guardarEdicion = async () => {
     if (!editandoId || !nombreEditado.trim()) return
 
+    const nombreFormateado = toTitleCase(nombreEditado.trim())
     setGuardando(true)
     try {
-      await actualizarCliente(editandoId, { nombre: nombreEditado.trim() })
+      await actualizarCliente(editandoId, { nombre: nombreFormateado })
       setClientes(prev =>
-        prev.map(c => c.id === editandoId ? { ...c, nombre: nombreEditado.trim() } : c)
+        prev.map(c => c.id === editandoId ? { ...c, nombre: nombreFormateado } : c)
       )
       cancelarEdicion()
     } catch (error) {
@@ -176,7 +186,7 @@ export default function Clientes() {
                   ) : (
                     // Modo normal
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-800 font-medium">{cliente.nombre}</span>
+                      <span className="text-gray-800 font-medium">{toTitleCase(cliente.nombre)}</span>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => iniciarEdicion(cliente)}
