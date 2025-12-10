@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.models import Cliente
+from app.models import Cliente, MovimientoPendiente
 from app.schemas import ClienteCreate, ClienteUpdate, ClienteResponse
 import os
 import shutil
@@ -81,11 +81,17 @@ def eliminar_cliente(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    """Elimina un cliente."""
+    """Elimina un cliente y sus movimientos asociados."""
     db_cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
     if not db_cliente:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
 
+    # Eliminar movimientos pendientes asociados al cliente
+    db.query(MovimientoPendiente).filter(
+        MovimientoPendiente.cliente_id == cliente_id
+    ).delete()
+
+    # Eliminar cliente
     db.delete(db_cliente)
     db.commit()
     return {"message": "Cliente eliminado"}
