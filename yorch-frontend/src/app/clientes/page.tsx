@@ -149,7 +149,7 @@ export default function Clientes() {
                 {clientesFiltrados.length} cliente(s)
               </p>
 
-              {clientesFiltrados.map((cliente) => (
+              {clientesFiltrados.map((cliente, index) => (
                 <div
                   key={cliente.id}
                   className="bg-white rounded-lg shadow p-4"
@@ -157,6 +157,7 @@ export default function Clientes() {
                   {editandoId === cliente.id ? (
                     // Modo edición
                     <div className="flex items-center gap-2">
+                      <span className="text-gray-500 font-medium w-8">{index + 1}.</span>
                       <input
                         type="text"
                         value={nombreEditado}
@@ -186,7 +187,10 @@ export default function Clientes() {
                   ) : (
                     // Modo normal
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-800 font-medium">{toTitleCase(cliente.nombre)}</span>
+                      <span className="text-gray-800 font-medium">
+                        <span className="text-gray-500 mr-2">{index + 1}.</span>
+                        {toTitleCase(cliente.nombre)}
+                      </span>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => iniciarEdicion(cliente)}
