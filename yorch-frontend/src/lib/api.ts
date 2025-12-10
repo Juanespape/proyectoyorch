@@ -80,6 +80,14 @@ export interface CrearClienteResponse {
   mensaje: string
 }
 
+export interface MovimientoDetalle {
+  id: number
+  tipo: 'PRESTAMO' | 'ABONO'
+  monto: number
+  notas?: string
+  fecha: string
+}
+
 export interface ClienteConPendientes {
   cliente_id: number
   nombre: string
@@ -87,6 +95,7 @@ export interface ClienteConPendientes {
   cantidad_pendientes: number
   total_prestamos: number
   total_abonos: number
+  movimientos: MovimientoDetalle[]
 }
 
 export interface ActualizarSobreResponse {

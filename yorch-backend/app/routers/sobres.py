@@ -218,46 +218,65 @@ def obtener_clientes_con_pendientes(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    """Obtiene la lista de clientes que tienen movimientos pendientes."""
+    """Obtiene la lista de clientes que tienen movimientos pendientes con detalle."""
     from sqlalchemy import func, case
+    from collections import defaultdict
 
-    # Obtener clientes con movimientos pendientes
-    pendientes = db.query(
-        Cliente.id,
-        Cliente.nombre,
-        Cliente.imagen_sobre_url,
-        func.count(MovimientoPendiente.id).label("cantidad_pendientes"),
-        func.sum(
-            case(
-                (MovimientoPendiente.tipo == "PRESTAMO", MovimientoPendiente.monto),
-                else_=0
-            )
-        ).label("total_prestamos"),
-        func.sum(
-            case(
-                (MovimientoPendiente.tipo == "ABONO", MovimientoPendiente.monto),
-                else_=0
-            )
-        ).label("total_abonos")
-    ).join(
+    # Obtener todos los movimientos pendientes con info del cliente
+    movimientos = db.query(
         MovimientoPendiente,
+        Cliente.nombre,
+        Cliente.imagen_sobre_url
+    ).join(
+        Cliente,
         Cliente.id == MovimientoPendiente.cliente_id
     ).filter(
         MovimientoPendiente.procesado == False
-    ).group_by(
-        Cliente.id,
+    ).order_by(
         Cliente.nombre,
-        Cliente.imagen_sobre_url
+        MovimientoPendiente.created_at.desc()
     ).all()
 
-    return [
-        {
-            "cliente_id": p.id,
-            "nombre": p.nombre,
-            "imagen_sobre_url": p.imagen_sobre_url,
-            "cantidad_pendientes": p.cantidad_pendientes,
-            "total_prestamos": float(p.total_prestamos or 0),
-            "total_abonos": float(p.total_abonos or 0)
-        }
-        for p in pendientes
-    ]
+    # Agrupar por cliente
+    clientes_dict = defaultdict(lambda: {
+        "movimientos": [],
+        "total_prestamos": 0,
+        "total_abonos": 0
+    })
+
+    for mov, nombre, imagen_url in movimientos:
+        cliente_key = mov.cliente_id
+        if "nombre" not in clientes_dict[cliente_key]:
+            clientes_dict[cliente_key]["cliente_id"] = mov.cliente_id
+            clientes_dict[cliente_key]["nombre"] = nombre
+            clientes_dict[cliente_key]["imagen_sobre_url"] = imagen_url
+
+        clientes_dict[cliente_key]["movimientos"].append({
+            "id": mov.id,
+            "tipo": mov.tipo,
+            "monto": float(mov.monto),
+            "notas": mov.notas,
+            "fecha": mov.created_at.isoformat() if mov.created_at else None
+        })
+
+        if mov.tipo == "PRESTAMO":
+            clientes_dict[cliente_key]["total_prestamos"] += float(mov.monto)
+        else:
+            clientes_dict[cliente_key]["total_abonos"] += float(mov.monto)
+
+    # Convertir a lista
+    resultado = []
+    for cliente_id, data in clientes_dict.items():
+        resultado.append({
+            "cliente_id": data["cliente_id"],
+            "nombre": data["nombre"],
+            "imagen_sobre_url": data["imagen_sobre_url"],
+            "cantidad_pendientes": len(data["movimientos"]),
+            "total_prestamos": data["total_prestamos"],
+            "total_abonos": data["total_abonos"],
+            "movimientos": data["movimientos"]
+        })
+
+    # Ordenar por nombre
+    resultado.sort(key=lambda x: x["nombre"].lower())
+    return resultado

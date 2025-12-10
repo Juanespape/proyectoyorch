@@ -73,6 +73,16 @@ export default function Pendientes() {
     }).format(amount)
   }
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('es-CO', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
@@ -131,19 +141,35 @@ export default function Pendientes() {
                     <p className="text-sm text-gray-500">
                       {cliente.cantidad_pendientes} movimiento(s)
                     </p>
-                    <div className="mt-2 space-y-1 text-sm">
-                      {cliente.total_prestamos > 0 && (
-                        <p className="text-red-600">
-                          Prestamos: {formatMoney(cliente.total_prestamos)}
-                        </p>
-                      )}
-                      {cliente.total_abonos > 0 && (
-                        <p className="text-green-600">
-                          Abonos: {formatMoney(cliente.total_abonos)}
-                        </p>
-                      )}
-                    </div>
                   </div>
+                </div>
+
+                {/* Lista de movimientos con fechas */}
+                <div className="mt-3 space-y-2 border-t pt-3">
+                  {cliente.movimientos.map((mov) => (
+                    <div
+                      key={mov.id}
+                      className={`flex items-center justify-between text-sm p-2 rounded-lg ${
+                        mov.tipo === 'PRESTAMO' ? 'bg-red-50' : 'bg-green-50'
+                      }`}
+                    >
+                      <div>
+                        <span className={`font-medium ${
+                          mov.tipo === 'PRESTAMO' ? 'text-red-700' : 'text-green-700'
+                        }`}>
+                          {mov.tipo === 'PRESTAMO' ? 'Prestamo' : 'Abono'}
+                        </span>
+                        <span className="text-gray-500 ml-2">
+                          {formatDate(mov.fecha)}
+                        </span>
+                      </div>
+                      <span className={`font-semibold ${
+                        mov.tipo === 'PRESTAMO' ? 'text-red-700' : 'text-green-700'
+                      }`}>
+                        {formatMoney(mov.monto)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
 
                 <button
