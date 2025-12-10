@@ -43,10 +43,10 @@ async def login(request: LoginRequest):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Crear token
+    # Crear token (expira en 6 horas)
     access_token = create_access_token(
         data={"sub": request.username},
-        expires_delta=timedelta(days=7)
+        expires_delta=timedelta(hours=6)
     )
 
     return TokenResponse(access_token=access_token)

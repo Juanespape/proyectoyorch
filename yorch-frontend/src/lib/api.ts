@@ -3,9 +3,42 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', 
 
 // ==================== AUTH HELPERS ====================
 
+const SESSION_DURATION_MS = 6 * 60 * 60 * 1000 // 6 horas en milisegundos
+
 function getToken(): string | null {
   if (typeof window === 'undefined') return null
+
+  // Verificar si la sesión ha expirado
+  const loginTime = localStorage.getItem('yorch_login_time')
+  if (loginTime) {
+    const elapsed = Date.now() - parseInt(loginTime)
+    if (elapsed >= SESSION_DURATION_MS) {
+      // Sesión expirada, limpiar y redirigir
+      localStorage.removeItem('yorch_token')
+      localStorage.removeItem('yorch_login_time')
+      window.location.href = '/login'
+      return null
+    }
+  }
+
   return localStorage.getItem('yorch_token')
+}
+
+export function setToken(token: string): void {
+  localStorage.setItem('yorch_token', token)
+  localStorage.setItem('yorch_login_time', Date.now().toString())
+}
+
+export function clearToken(): void {
+  localStorage.removeItem('yorch_token')
+  localStorage.removeItem('yorch_login_time')
+}
+
+export function getSessionTimeRemaining(): number {
+  const loginTime = localStorage.getItem('yorch_login_time')
+  if (!loginTime) return 0
+  const elapsed = Date.now() - parseInt(loginTime)
+  return Math.max(0, SESSION_DURATION_MS - elapsed)
 }
 
 function authHeaders(contentType?: string): HeadersInit {
@@ -22,7 +55,7 @@ function authHeaders(contentType?: string): HeadersInit {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (response.status === 401) {
-    localStorage.removeItem('yorch_token')
+    clearToken()
     window.location.href = '/login'
     throw new Error('Sesion expirada')
   }
@@ -186,7 +219,7 @@ export async function marcarProcesado(movimientoId: number): Promise<void> {
     headers: authHeaders(),
   })
   if (response.status === 401) {
-    localStorage.removeItem('yorch_token')
+    clearToken()
     window.location.href = '/login'
     throw new Error('Sesion expirada')
   }

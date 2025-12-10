@@ -4,6 +4,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
 const TOKEN_KEY = 'yorch_token'
+const LOGIN_TIME_KEY = 'yorch_login_time'
+const SESSION_DURATION_MS = 6 * 60 * 60 * 1000 // 6 horas en milisegundos
 
 interface AuthContextType {
   token: string | null
@@ -22,10 +24,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Cargar token de localStorage al iniciar
     const savedToken = localStorage.getItem(TOKEN_KEY)
-    if (savedToken) {
-      setToken(savedToken)
+    const loginTime = localStorage.getItem(LOGIN_TIME_KEY)
+
+    if (savedToken && loginTime) {
+      const elapsed = Date.now() - parseInt(loginTime)
+      if (elapsed >= SESSION_DURATION_MS) {
+        // Sesión expirada
+        localStorage.removeItem(TOKEN_KEY)
+        localStorage.removeItem(LOGIN_TIME_KEY)
+        setIsLoading(false)
+      } else {
+        setToken(savedToken)
+        setIsLoading(false)
+        // Configurar timer para cerrar sesión automáticamente
+        const timeRemaining = SESSION_DURATION_MS - elapsed
+        const timer = setTimeout(() => {
+          localStorage.removeItem(TOKEN_KEY)
+          localStorage.removeItem(LOGIN_TIME_KEY)
+          setToken(null)
+          window.location.href = '/login'
+        }, timeRemaining)
+        return () => clearTimeout(timer)
+      }
+    } else {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }, [])
 
   const login = async (username: string, password: string) => {
@@ -44,11 +67,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const data = await response.json()
     localStorage.setItem(TOKEN_KEY, data.access_token)
+    localStorage.setItem(LOGIN_TIME_KEY, Date.now().toString())
     setToken(data.access_token)
   }
 
   const logout = () => {
     localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(LOGIN_TIME_KEY)
     setToken(null)
   }
 
