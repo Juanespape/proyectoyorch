@@ -62,12 +62,18 @@ async def extraer_nombre_de_sobre(
         }
 
         prompt = """Analiza esta imagen de un sobre de préstamos.
-        Extrae ÚNICAMENTE el nombre completo del cliente que aparece escrito en el sobre.
+        Extrae ÚNICAMENTE el nombre completo del cliente EXACTAMENTE como aparece escrito en el sobre.
+
+        IMPORTANTE:
+        - Transcribe el nombre en el MISMO ORDEN que está escrito en el sobre
+        - Los sobres siempre tienen formato APELLIDOS NOMBRES (ej: "Pérez García Juan Carlos")
+        - NO cambies el orden de las palabras
+        - NO interpretes cuál es nombre y cuál es apellido, solo copia lo que ves
 
         Responde SOLO con el nombre, sin explicaciones adicionales.
         Si no puedes identificar un nombre claro, responde "NO_ENCONTRADO".
 
-        Ejemplo de respuesta: "Juan Pérez García"
+        Ejemplo: Si el sobre dice "Arteaga Romero Jefersson", responde exactamente "Arteaga Romero Jefersson"
         """
 
         response = model.generate_content([prompt, image_part])
