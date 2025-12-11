@@ -131,7 +131,7 @@ export default function Pendientes() {
                 <div className="flex items-start gap-4">
                   {cliente.imagen_sobre_url && (
                     <img
-                      src={`${API_BASE_URL}${cliente.imagen_sobre_url}`}
+                      src={`${API_BASE_URL}${cliente.imagen_sobre_url}?t=${Date.now()}`}
                       alt={cliente.nombre}
                       className="w-16 h-16 object-cover rounded-lg"
                     />
