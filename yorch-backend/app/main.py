@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pathlib import Path
 from app.core.config import settings
 from app.routers import auth_router, chat_router, clientes_router, movimientos_router, sobres_router, escrituras_router
@@ -39,7 +40,26 @@ def health_check():
     return {"status": "healthy"}
 
 
-# Servir archivos estáticos (imágenes de sobres)
+# Servir archivos estáticos (imágenes de sobres) con headers de no-cache
 uploads_path = Path(__file__).parent.parent / "uploads"
 uploads_path.mkdir(parents=True, exist_ok=True)
+
+
+@app.get("/uploads/sobres/{filename}")
+async def get_sobre_image(filename: str):
+    """Sirve imágenes de sobres con headers de no-cache para evitar problemas de caché."""
+    file_path = uploads_path / "sobres" / filename
+    if not file_path.exists():
+        return {"error": "Archivo no encontrado"}
+    return FileResponse(
+        path=str(file_path),
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+    )
+
+
+# Servir otros archivos estáticos (escrituras, etc.)
 app.mount("/uploads", StaticFiles(directory=str(uploads_path)), name="uploads")
