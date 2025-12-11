@@ -100,10 +100,10 @@ export default function Chat() {
               {message.imagen_url && (
                 <div className="mt-2">
                   <img
-                    src={`${API_BASE_URL}${message.imagen_url}`}
+                    src={`${API_BASE_URL}${message.imagen_url}?t=${Date.now()}`}
                     alt="Sobre del cliente"
                     className="w-32 h-32 sm:w-40 sm:h-40 object-cover rounded cursor-pointer hover:opacity-80 hover:scale-105 transition-all border-2 border-gray-200"
-                    onClick={() => setSelectedImage(`${API_BASE_URL}${message.imagen_url}`)}
+                    onClick={() => setSelectedImage(`${API_BASE_URL}${message.imagen_url}?t=${Date.now()}`)}
                   />
                   <p className="text-xs text-gray-500 mt-1">Toca para ampliar</p>
                 </div>
