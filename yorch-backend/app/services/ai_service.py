@@ -49,9 +49,24 @@ def parse_monto(texto: str) -> Optional[Decimal]:
 
 def buscar_cliente_por_nombre(db: Session, nombre: str) -> Optional[Cliente]:
     """Busca un cliente por nombre (búsqueda parcial)."""
-    return db.query(Cliente).filter(
+    # Buscar coincidencia parcial con cualquier parte del nombre
+    cliente = db.query(Cliente).filter(
         Cliente.nombre.ilike(f"%{nombre}%")
     ).first()
+
+    # Si no encuentra, intentar buscar cada palabra del nombre por separado
+    if not cliente and " " in nombre:
+        palabras = nombre.split()
+        for palabra in palabras:
+            if len(palabra) > 2:  # Ignorar palabras muy cortas
+                cliente = db.query(Cliente).filter(
+                    Cliente.nombre.ilike(f"%{palabra}%")
+                ).first()
+                if cliente:
+                    break
+
+    print(f"[DEBUG] Buscando cliente: '{nombre}' -> {'Encontrado: ' + cliente.nombre if cliente else 'No encontrado'}")
+    return cliente
 
 
 def procesar_comando(db: Session, respuesta_ia: str) -> Tuple[str, Optional[str], Optional[int], Optional[str]]:

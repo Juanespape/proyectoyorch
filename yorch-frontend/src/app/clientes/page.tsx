@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ArrowLeft, Loader2, RefreshCw, Pencil, Trash2, Check, X, Search, Users } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { ArrowLeft, Loader2, RefreshCw, Pencil, Trash2, Check, X, Search, Users, Camera } from 'lucide-react'
 import Link from 'next/link'
-import { obtenerClientes, actualizarCliente, eliminarCliente, Cliente } from '@/lib/api'
+import { obtenerClientes, actualizarCliente, eliminarCliente, subirImagenSobre, Cliente } from '@/lib/api'
 
 export default function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([])
@@ -13,6 +13,9 @@ export default function Clientes() {
   const [nombreEditado, setNombreEditado] = useState('')
   const [guardando, setGuardando] = useState(false)
   const [eliminandoId, setEliminandoId] = useState<number | null>(null)
+  const [subiendoSobreId, setSubiendoSobreId] = useState<number | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [clienteParaSobre, setClienteParaSobre] = useState<number | null>(null)
 
   const cargarClientes = async () => {
     setLoading(true)
@@ -86,6 +89,38 @@ export default function Clientes() {
       alert('Error al eliminar el cliente')
     } finally {
       setEliminandoId(null)
+    }
+  }
+
+  const iniciarActualizarSobre = (clienteId: number) => {
+    setClienteParaSobre(clienteId)
+    fileInputRef.current?.click()
+  }
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !clienteParaSobre) return
+
+    setSubiendoSobreId(clienteParaSobre)
+    try {
+      const response = await subirImagenSobre(clienteParaSobre, file)
+      // Actualizar la imagen en el estado local
+      setClientes(prev =>
+        prev.map(c => c.id === clienteParaSobre
+          ? { ...c, imagen_sobre_url: response.imagen_url }
+          : c
+        )
+      )
+      alert('Sobre actualizado correctamente')
+    } catch (error) {
+      console.error('Error al actualizar sobre:', error)
+      alert('Error al actualizar el sobre')
+    } finally {
+      setSubiendoSobreId(null)
+      setClienteParaSobre(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
@@ -193,6 +228,18 @@ export default function Clientes() {
                       </span>
                       <div className="flex items-center gap-2">
                         <button
+                          onClick={() => iniciarActualizarSobre(cliente.id)}
+                          disabled={subiendoSobreId === cliente.id}
+                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition disabled:opacity-50"
+                          title="Actualizar sobre"
+                        >
+                          {subiendoSobreId === cliente.id ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                          ) : (
+                            <Camera className="w-5 h-5" />
+                          )}
+                        </button>
+                        <button
                           onClick={() => iniciarEdicion(cliente)}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
                           title="Editar nombre"
@@ -220,6 +267,16 @@ export default function Clientes() {
           )}
         </div>
       </div>
+
+      {/* Input oculto para seleccionar imagen del sobre */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
     </div>
   )
 }
